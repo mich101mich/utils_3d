@@ -1,5 +1,5 @@
 /// A 3-Dimensional Vector with x, y, z Components as f32
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Vector {
 	/// the x Component
 	pub x: f32,
@@ -138,9 +138,7 @@ impl Add for Vector {
 }
 impl AddAssign for Vector {
 	fn add_assign(&mut self, rhs: Vector) {
-		self.x += rhs.x;
-		self.y += rhs.y;
-		self.z += rhs.z;
+		*self = *self + rhs;
 	}
 }
 impl Sub for Vector {
@@ -155,9 +153,7 @@ impl Sub for Vector {
 }
 impl SubAssign for Vector {
 	fn sub_assign(&mut self, rhs: Vector) {
-		self.x -= rhs.x;
-		self.y -= rhs.y;
-		self.z -= rhs.z;
+		*self = *self - rhs;
 	}
 }
 impl Mul for Vector {
@@ -177,6 +173,11 @@ impl Mul<f32> for Vector {
 		}
 	}
 }
+impl MulAssign<f32> for Vector {
+	fn mul_assign(&mut self, rhs: f32) {
+		*self = *self * rhs;
+	}
+}
 
 impl Div<f32> for Vector {
 	type Output = Vector;
@@ -188,6 +189,25 @@ impl Div<f32> for Vector {
 		}
 	}
 }
+impl DivAssign<f32> for Vector {
+	fn div_assign(&mut self, rhs: f32) {
+		*self = *self / rhs;
+	}
+}
+
+use super::Matrix;
+
+impl Mul<Matrix> for Vector {
+	type Output = Vector;
+	fn mul(self, rhs: Matrix) -> Vector {
+		rhs * self
+	}
+}
+impl MulAssign<Matrix> for Vector {
+	fn mul_assign(&mut self, rhs: Matrix) {
+		*self = rhs * *self;
+	}
+}
 
 impl Neg for Vector {
 	type Output = Vector;
@@ -197,6 +217,15 @@ impl Neg for Vector {
 			y: -self.y,
 			z: -self.z,
 		}
+	}
+}
+
+impl PartialEq for Vector {
+	fn eq(&self, rhs: &Vector) -> bool {
+		use std::f32::EPSILON as epsilon;
+		(self.x - rhs.x).abs() <= epsilon
+			&& (self.y - rhs.y).abs() <= epsilon
+			&& (self.z - rhs.z).abs() <= epsilon
 	}
 }
 

@@ -158,7 +158,7 @@ impl Matrix {
 
 use std::ops::*;
 
-impl Mul for &'_ Matrix {
+impl Mul for Matrix {
 	type Output = Matrix;
 	fn mul(self, rhs: Self) -> Matrix {
 		let mut ret = Matrix::new();
@@ -166,44 +166,53 @@ impl Mul for &'_ Matrix {
 			for x in 0..4 {
 				let mut sum = 0.0;
 				for i in 0..4 {
-					sum += self.data[y][i] * rhs.data[i][x];
+					sum += self[y][i] * rhs[i][x];
 				}
-				ret.data[x][y] = sum;
+				ret[y][x] = sum;
 			}
 		}
 		ret
 	}
 }
+impl MulAssign for Matrix {
+	fn mul_assign(&mut self, rhs: Self) {
+		*self = *self * rhs;
+	}
+}
 
-impl Mul<Vector> for &Matrix {
+impl Mul<Vector> for Matrix {
 	type Output = Vector;
 	fn mul(self, rhs: Vector) -> Vector {
 		let mut out = [0.0; 4];
 		let rhs = [rhs.x, rhs.y, rhs.z, 1.0];
-		out.iter_mut().zip(self.iter()).for_each(|(out, lhs)| {
-			lhs.iter().zip(rhs.iter()).for_each(|(l, r)| {
-				*out += l * r;
-			});
-		});
+
+		for i in 0..4 {
+			for j in 0..4 {
+				out[i] += self[i][j] * rhs[j];
+			}
+		}
+
 		Vector::from(&out[0..3]) * (1.0 / out[3])
 	}
 }
 
-impl Mul<f32> for &Matrix {
+impl Mul<f32> for Matrix {
 	type Output = Matrix;
 	fn mul(self, rhs: f32) -> Matrix {
-		let mut out = *self;
-		out.iter_mut()
-			.flat_map(|row| row.iter_mut())
-			.for_each(|v| *v *= rhs);
+		let mut out = self;
+		for i in 0..4 {
+			for j in 0..4 {
+				out[i][j] *= rhs;
+			}
+		}
 		out
 	}
 }
 
-impl<'a, 'b> Add<&'b Matrix> for &'a Matrix {
+impl Add<Matrix> for Matrix {
 	type Output = Matrix;
-	fn add(self, rhs: &'b Matrix) -> Matrix {
-		let mut out = *self;
+	fn add(self, rhs: Matrix) -> Matrix {
+		let mut out = self;
 		for i in 0..4 {
 			for j in 0..4 {
 				out[i][j] += rhs[i][j];
@@ -213,10 +222,10 @@ impl<'a, 'b> Add<&'b Matrix> for &'a Matrix {
 	}
 }
 
-impl<'a, 'b> Sub<&'b Matrix> for &'a Matrix {
+impl Sub<Matrix> for Matrix {
 	type Output = Matrix;
-	fn sub(self, rhs: &'b Matrix) -> Matrix {
-		let mut out = *self;
+	fn sub(self, rhs: Matrix) -> Matrix {
+		let mut out = self;
 		for i in 0..4 {
 			for j in 0..4 {
 				out[i][j] -= rhs[i][j];
