@@ -229,6 +229,12 @@ impl PartialEq for Vector {
 	}
 }
 
+impl std::iter::Sum for Vector {
+	fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+		iter.fold(Vector::new(), |a, b| a + b)
+	}
+}
+
 impl Index<usize> for Vector {
 	type Output = f32;
 	fn index(&self, index: usize) -> &f32 {

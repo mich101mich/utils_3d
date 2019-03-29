@@ -1,7 +1,9 @@
+#![allow(clippy::needless_range_loop, clippy::new_without_default_derive)]
+
 use Vector;
 
 /// A 4D Matrix for calculating with 3D Vectors
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug)]
 pub struct Matrix {
 	/// The internal data of the Matrix
 	pub data: [[f32; 4]; 4],
@@ -17,7 +19,9 @@ impl Matrix {
 	/// [0  0  0  0]
 	/// ```
 	pub fn new() -> Matrix {
-		Default::default()
+		Matrix {
+			data: Default::default()
+		}
 	}
 	/// Creates an Identity Matrix with the diagonal set to 1 and everything else set to 0
 	///
@@ -82,6 +86,7 @@ impl Matrix {
 		}
 	}
 	/// Creates a Frustum Matrix with the given Boundaries
+	#[allow(clippy::many_single_char_names)]
 	pub fn frustum(left: f32, right: f32, top: f32, bottom: f32, near: f32, far: f32) -> Matrix {
 		let (l, r, t, b, n, f) = (left, right, top, bottom, near, far);
 
@@ -124,8 +129,8 @@ impl Matrix {
 		Matrix {
 			data: [
 				[1.0, 0.0, 0.0, 0.0],
-				[0.0, c, s, 0.0],
-				[0.0, -s, c, 0.0],
+				[0.0, c, -s, 0.0],
+				[0.0, s, c, 0.0],
 				[0.0, 0.0, 0.0, 1.0],
 			],
 		}
@@ -135,9 +140,9 @@ impl Matrix {
 		let (s, c) = radians.sin_cos();
 		Matrix {
 			data: [
-				[c, 0.0, -s, 0.0],
+				[c, 0.0, s, 0.0],
 				[0.0, 1.0, 0.0, 0.0],
-				[s, 0.0, c, 0.0],
+				[-s, 0.0, c, 0.0],
 				[0.0, 0.0, 0.0, 1.0],
 			],
 		}
@@ -232,6 +237,12 @@ impl Sub<Matrix> for Matrix {
 			}
 		}
 		out
+	}
+}
+
+impl std::iter::Sum for Matrix {
+	fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+		iter.fold(Matrix::new(), |a, b| a + b)
 	}
 }
 
